@@ -3,14 +3,14 @@
 `generate.py` is the exact Python listing from the October 21 revised article candidate, “The Life of a Token.” It makes the autoregressive loop visible: score the sequence, select the highest-scoring next token, append it, and repeat.
 
 - Model: `Qwen/Qwen2.5-0.5B-Instruct`.
-- Device and precision: CPU, float32.
+- Device and precision: CPU by default, float32. Use `--device cuda` for an explicit CUDA run.
 - One chat-formatted prompt; greedy decoding; at most 32 new tokens, stopping earlier on a configured end token.
 - `use_cache=False`: every call processes the entire growing sequence, and the loop reads only the last position's logits. This illustrates token dependencies; it is not efficient cached decode.
 - Only generated text is printed. There is no timing or benchmark result.
 
 ## Setup and run
 
-Use Python 3.10 or newer in a fresh environment. The first execution downloads model files from Hugging Face and caches them locally; internet access, disk space and RAM are required. No GPU, Accelerate setup or paid service is needed.
+Use Python 3.10 or newer in a fresh environment. The first execution downloads model files from Hugging Face and caches them locally; internet access, disk space and RAM are required. CPU mode needs no GPU or paid service. CUDA mode requires a working PyTorch CUDA installation and an available GPU.
 
 From the repository root, in PowerShell:
 
@@ -21,6 +21,14 @@ python -m venv .venv
 .\.venv\Scripts\python.exe week-01-life-of-a-token/generate.py
 ```
 
+For an explicit CUDA run:
+
+```powershell
+.\.venv\Scripts\python.exe week-01-life-of-a-token/generate.py --device cuda
+```
+
+CUDA mode checks that CUDA is available and that both model parameters and input tensors are on CUDA; it does not silently fall back to CPU.
+
 On macOS/Linux, use `.venv/bin/python` in place of `.\.venv\Scripts\python.exe` after creating the environment.
 
 The requirements list direct dependencies without claiming a complete environment lock. The listing uses the Transformers `dtype` argument. [Transformers installation guidance](https://huggingface.co/docs/transformers/installation) and [model loading documentation](https://huggingface.co/docs/transformers/main_classes/model) describe installation and loading options.
@@ -29,7 +37,8 @@ The requirements list direct dependencies without claiming a complete environmen
 
 - Syntax parsing passed; source matches the revised article's Python block exactly after newline normalization.
 - The exact listing completed a real model load with exit code 0 and returned `The capital of France is Paris.` This is an observed example output, not a benchmark or a promise of identical output under every package/model revision.
-- Tested on Python 3.12.3, PyTorch 2.8.0+cu128, Transformers 5.20.2, NVIDIA RTX 2000 Ada Generation. The script explicitly places the model on CPU; the GPU was not used for inference. The downloaded model snapshot was `7ae557604adf67be50417f59c2c2f167def9a775`.
+- CPU smoke test environment: Python 3.12.3, PyTorch 2.8.0+cu128, Transformers 5.20.2, NVIDIA RTX 2000 Ada Generation. The downloaded model snapshot was `7ae557604adf67be50417f59c2c2f167def9a775`.
+- A separate CUDA smoke test is recorded in the Chief of Staff review; it is a device validation, not a performance measurement.
 - The script's output does not report generated-token count or whether EOS ended the loop. A clean exit confirms generation completed, but does not establish which stopping condition ended the loop. Do not claim EOS stopping was demonstrated.
 - This is a smoke test of loading and generation, not a performance measurement.
 

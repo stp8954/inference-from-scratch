@@ -6,7 +6,7 @@ Companion code for the series in [stp8954/Inference-engineer](https://github.com
 | --- | --- |
 | 1: The Life of a Token | [week-01-life-of-a-token/](week-01-life-of-a-token/) — CPU generation loop; prefill/decode explanation |
 
-Blog 1 uses Qwen2.5-0.5B-Instruct with float32 on CPU and caching disabled. It makes no speed or hardware benchmark claims. See its README for setup and validation status.
+Blog 1 uses Qwen2.5-0.5B-Instruct with float32, CPU by default or explicitly selected CUDA, and caching disabled. It makes no speed or hardware benchmark claims. See its README for setup and validation status.
 
 ## Later measurement contract
 
