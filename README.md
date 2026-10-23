@@ -2,14 +2,12 @@
 
 Companion code for the series in [stp8954/Inference-engineer](https://github.com/stp8954/Inference-engineer).
 
-**Locked contract**
+| Blog | Folder and current scope |
+| --- | --- |
+| 1: The Life of a Token | [week-01-life-of-a-token/](week-01-life-of-a-token/) — CPU generation loop; prefill/decode explanation |
 
-- Model: `meta-llama/Llama-3.1-8B-Instruct` at BF16
-- Lab GPU: one cloud H100 SXM 80GB
-- "I measured" = that checkpoint + that SKU + a pinned image + a checked-in harness
+Blog 1 uses Qwen2.5-0.5B-Instruct with float32 on CPU and caching disabled. It makes no speed or hardware benchmark claims. See its README for setup and validation status.
 
-Week 1 is first principles and spec-sheet ceilings. Do not publish H100 tok/s until the Week 4 harness exists.
+## Later measurement contract
 
-| Week | Folder |
-|---|---|
-| 1 | [`week-01-life-of-a-token/`](week-01-life-of-a-token/) — naive loop + napkin ceilings |
+The existing series plan names `meta-llama/Llama-3.1-8B-Instruct` at BF16 on one H100 SXM 80GB. Those are later measurement targets, not Blog 1 dependencies or completed results. A measured claim requires the exact checkpoint, hardware, pinned environment and checked-in harness with raw evidence. No H100 result is supplied here.

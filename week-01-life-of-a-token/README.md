@@ -1,108 +1,40 @@
-# Week 1 — Life of a token
+# Blog 1 — The Life of a Token
 
-Post: [drafts/week-01-life-of-a-token.md](https://github.com/stp8954/Inference-engineer/blob/main/drafts/week-01-life-of-a-token.md)
+`generate.py` is the exact Python listing from the October 21 revised article candidate, “The Life of a Token.” It makes the autoregressive loop visible: score the sequence, select the highest-scoring next token, append it, and repeat.
 
-This folder is the code that post points at. Week 1 does **not** claim measured decode speed on the H100. It ships a loop you can run anywhere and a calculator for the ceiling the post derives.
+- Model: `Qwen/Qwen2.5-0.5B-Instruct`.
+- Device and precision: CPU, float32.
+- One chat-formatted prompt; greedy decoding; at most 32 new tokens, stopping earlier on a configured end token.
+- `use_cache=False`: every call processes the entire growing sequence, and the loop reads only the last position's logits. This illustrates token dependencies; it is not efficient cached decode.
+- Only generated text is printed. There is no timing or benchmark result.
 
-## Pins
+## Setup and run
 
-| Name | Value |
-|---|---|
-| Series model | `meta-llama/Llama-3.1-8B-Instruct` |
-| Dtype | BF16 |
-| Lab GPU (later weeks) | H100 SXM 80GB, 3.35 TB/s advertised HBM |
-| Teaching model | `Qwen/Qwen2.5-0.5B-Instruct` — so the loop runs without 16 GB VRAM |
-| Ceiling this week | `3350 GB/s / 16 GB ≈ 210 tok/s` for batch-1 dense BF16 decode on the H100 pin |
+Use Python 3.10 or newer in a fresh environment. The first execution downloads model files from Hugging Face and caches them locally; internet access, disk space and RAM are required. No GPU, Accelerate setup or paid service is needed.
 
-HF gated: accept the Llama 3.1 license and pass a token if you load the 8B.
+From the repository root, in PowerShell:
 
-## What to implement
-
-Three small files. No server, no CUDA graphs, no `use_cache=True` in the teaching loop.
-
-### 1. `generate.py`
-
-The post's naive loop, copy-paste close.
-
-- Default `MODEL` = Qwen 0.5B.
-- `--model meta-llama/Llama-3.1-8B-Instruct` for the series checkpoint.
-- `use_cache=False` on every step. Comment in the file: Hugging Face still forwards **all** positions; we only read the last logit.
-- Chat template + optional greedy / nucleus.
-- Print `n tokens in t s -> n/t tok/s` and make it obvious this number is **not** a series result (no warmup, no `torch.cuda.synchronize`, includes sampling + `torch.cat`).
-
-Do not treat this print as the Week 4 number.
-
-### 2. `napkin.py`
-
-Pure arithmetic. No GPU required.
-
-```
-weight_bytes = n_params * bytes_per_param
-ceiling_tok_s = bandwidth_gb_s / (weight_bytes / 1e9)
-compute_s = (2 * n_params) / flop_s
-weight_read_s = weight_bytes / bandwidth_B_s
-ops_per_byte = flop_s / bandwidth_B_s
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install --upgrade -r week-01-life-of-a-token/requirements.txt
+.\.venv\Scripts\python.exe week-01-life-of-a-token/generate.py
 ```
 
-Defaults:
+On macOS/Linux, use `.venv/bin/python` in place of `.\.venv\Scripts\python.exe` after creating the environment.
 
-```
---params 8e9 --dtype bf16 --bandwidth-tb-s 3.35 --dense-tflops 989
-```
+The requirements list direct dependencies without claiming a complete environment lock. The listing uses the Transformers `dtype` argument. [Transformers installation guidance](https://huggingface.co/docs/transformers/installation) and [model loading documentation](https://huggingface.co/docs/transformers/main_classes/model) describe installation and loading options.
 
-Print, labeled as ceilings:
+## Smoke test — October 22, 2026
 
-- weight GiB
-- H100 batch-1 decode ceiling (~210 tok/s)
-- weight-read lower bound (~4.8 ms)
-- dense-compute lower bound (~16 µs)
-- ridge (~295 FLOP/byte)
-- intensity of this workload (~1 FLOP/byte for dense batch-1 decode)
+- Syntax parsing passed; source matches the revised article's Python block exactly after newline normalization.
+- The exact listing completed a real model load with exit code 0 and returned `The capital of France is Paris.` This is an observed example output, not a benchmark or a promise of identical output under every package/model revision.
+- Tested on Python 3.12.3, PyTorch 2.8.0+cu128, Transformers 5.20.2, NVIDIA RTX 2000 Ada Generation. The script explicitly places the model on CPU; the GPU was not used for inference. The downloaded model snapshot was `7ae557604adf67be50417f59c2c2f167def9a775`.
+- The script's output does not report generated-token count or whether EOS ended the loop. A clean exit confirms generation completed, but does not establish which stopping condition ended the loop. Do not claim EOS stopping was demonstrated.
+- This is a smoke test of loading and generation, not a performance measurement.
 
-Optional `--compare` table for other advertised bandwidths (4090 ~1.0 TB/s, M5 153 GB/s, M5 Max 614 GB/s). Label those **formula examples**, not lab pins. Note a 16 GB laptop cannot hold the 8B BF16 weights.
+The article candidate is currently a local draft in the Chief of Staff workspace (`media/drafts/week-01-life-of-a-token-v2.md`); its public publication link is pending. The older draft in Inference-engineer has a different listing and is not the source for this file.
 
-No measured tok/s in this file.
+## Scope retained for later
 
-### 3. `requirements.txt`
-
-Pin enough to run `generate.py`:
-
-```
-torch
-transformers
-accelerate
-```
-
-Do not invent CUDA/torch versions until the Week 4 image exists. When that image is pinned, add it here as a comment: `WEEK4_IMAGE=...`.
-
-## What not to put here yet
-
-- `bench_decode.py --cache` — that is Week 3/4 (KV + sync + warmup + H100 log).
-- vLLM / SGLang / TensorRT.
-- Quant, MTP, speculative decode.
-- Rust.
-- A Mac-only path presented as the series measurement.
-
-If you want a placeholder:
-
-```
-# bench_decode.py  — Week 4. Same 8B, H100 SXM, warmup, synchronize, raw JSON log.
-```
-
-## How to run
-
-```bash
-python napkin.py
-python generate.py
-# needs ~16 GB VRAM + Llama access
-python generate.py --model meta-llama/Llama-3.1-8B-Instruct
-```
-
-## Done when
-
-- [ ] `napkin.py` reproduces 16 GB, ~210 tok/s, ~4.8 ms, ~16 µs, ~295 ops/byte without a GPU
-- [ ] `generate.py` runs the 0.5B loop on some device
-- [ ] README states the 8B + H100 pin and that printed tok/s is not the lab result
-- [ ] no file in this folder claims an H100 measurement
-
-Week 4 is when this repo grows a harness and a results JSON from the rented H100.
+The previous implementation plan is preserved in [legacy-plan.md](legacy-plan.md). Its napkin calculator, model-selection flags, sampling, timing and H100 targets are historical/future plans, not features of this script. Cached generation and performance comparisons are separate follow-up work.

@@ -1,0 +1,3 @@
+# Direct dependencies; a tested version lock is pending the first real run.
+torch
+transformers
