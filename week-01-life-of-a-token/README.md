@@ -42,6 +42,20 @@ The requirements list direct dependencies without claiming a complete environmen
 - The script's output does not report generated-token count or whether EOS ended the loop. A clean exit confirms generation completed, but does not establish which stopping condition ended the loop. Do not claim EOS stopping was demonstrated.
 - This is a smoke test of loading and generation, not a performance measurement.
 
+## Observed CUDA token counts — October 23, 2026
+
+One explicit CUDA run on an NVIDIA RTX 2000 Ada Generation completed on CUDA (`cuda:0`) with float32. The chat-formatted prompt contained 36 tokens. Generation produced 8 tokens including the EOS token (ID `151645`) and stopped because EOS was selected, before the 32-token cap. The displayed text was `The capital of France is Paris.` The input sequence lengths before the eight forward calls were 36 through 43 tokens. Raw machine-readable evidence, including package versions, model snapshot revision, source SHA-256 and UTC run time, is in [results/2026-10-23-cuda.json](results/2026-10-23-cuda.json).
+
+These are token-count observations for this one prompt, model snapshot and software environment. They are not timing, throughput or benchmark results. In the JSON, `generated_token_count_includes_eos: true` is a counting convention: count every generated ID, including EOS if emitted. It does not say whether EOS occurred in a particular run; `stop_reason` records whether that run stopped on EOS or the token cap. Decoded display text skips special tokens.
+
+To reproduce, install the listed direct requirements in an environment with CUDA-enabled PyTorch, then run:
+
+```powershell
+python week-01-life-of-a-token/generate.py --device cuda --report week-01-life-of-a-token/results/run.json
+```
+
+The captured run used Python 3.12.3, PyTorch 2.8.0+cu128, Transformers 5.20.2, and model revision `7ae557604adf67be50417f59c2c2f167def9a775`.
+
 The article candidate is currently a local draft in the Chief of Staff workspace (`media/drafts/week-01-life-of-a-token-v2.md`); its public publication link is pending. The older draft in Inference-engineer has a different listing and is not the source for this file.
 
 ## Scope retained for later

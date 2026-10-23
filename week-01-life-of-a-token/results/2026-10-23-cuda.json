@@ -1,0 +1,24 @@
+{
+  "run_date_utc": "2026-10-23T17:29:54.365887+00:00",
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "model_revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+  "device": "cuda:0",
+  "input_device": "cuda:0",
+  "precision": "float32",
+  "prompt_token_count": 36,
+  "generated_token_count": 8,
+  "generated_token_count_includes_eos": true,
+  "final_generated_token_id": 151645,
+  "generated_text": "The capital of France is Paris.",
+  "displayed_text": "The capital of France is Paris.",
+  "loop_iterations": 8,
+  "stop_reason": "eos",
+  "max_new_tokens": 32,
+  "iteration_input_sequence_lengths": [36, 37, 38, 39, 40, 41, 42, 43],
+  "source_sha256": "a9ed2630810a27af77e23643cfb86c37c1d3c45c613506fa31fd8203a54033ff",
+  "python_version": "3.12.3",
+  "package_versions": {
+    "torch": "2.8.0+cu128",
+    "transformers": "5.20.2"
+  }
+}
